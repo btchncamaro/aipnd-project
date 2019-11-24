@@ -114,15 +114,14 @@ def build_model(args):
     # create a new layer to perform classifications.  The dataset has 102 labels
     classifier = nn.Sequential(OrderedDict([
         ('drop1', nn.Dropout(0.2)),
-        ('fc1', nn.Linear(input_features, 512)),
+        ('fc1', nn.Linear(input_features, args.hidden_units)),
         ('relu', nn.ReLU()),
         ('drop', nn.Dropout(0.2)),
-        ('fc2', nn.Linear(512, 102)),
+        ('fc2', nn.Linear(args.hidden_units, 102)),
         ('output', nn.LogSoftmax(dim=1))]))
 
     # replace last layer with new trainable one
     model.classifier = classifier
-    print(type(model))
 
     return model, model_name
 
@@ -182,7 +181,7 @@ def setCommandArgs():
 
     parser.add_argument('data_dir', help='directory to train/test/validation data')
     parser.add_argument('--save_dir', action="store", dest="save_dir", required=True)
-    parser.add_argument('--arch', action="store", dest="arch", default="vgg13")
+    parser.add_argument('--arch', action="store", dest="arch", default="vgg13", help='valid architecures are vgg16, alexnet, and densenet121')
     parser.add_argument('--learning_rate', action="store", dest="learning_rate", default=0.01, type=float)
     parser.add_argument('--hidden_units', action="store", dest="hidden_units", default=512, type=int)
     parser.add_argument('--epochs', action="store", dest="epochs", default=20, type=int)
@@ -194,3 +193,4 @@ def setCommandArgs():
 
 if __name__ == "__main__":
     main()
+#python train.py flowers --save_dir . --learning_rate 0.001 --arch vgg16 --hidden_units 1000 --epochs 3 --gpu

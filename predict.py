@@ -5,14 +5,15 @@ from PIL import Image
 import numpy as np
 import json
 
+
 def main():
     command_args = setCommandArgs()
     model, model_name = load_model(command_args)
     topk_probs, topk_classes = predict(command_args, model)
     display_category_names(command_args, model, topk_probs, topk_classes)
 
-def display_category_names(command_args, model, topk_probs, topk_classes):
 
+def display_category_names(command_args, model, topk_probs, topk_classes):
     if command_args.category_names != None:
         with open(command_args.category_names, 'r') as f:
             cat_to_name = json.load(f)
@@ -24,11 +25,12 @@ def display_category_names(command_args, model, topk_probs, topk_classes):
         for prob, clazz in zip(topk_probs, topk_classes):
             if str(clazz) not in cat_to_name.keys():
                 break
-            print(f"    {cat_to_name[str(clazz)]}: {prob*100:.2f}%" )
+            print(f"    {cat_to_name[str(clazz)]} [{clazz}]: {prob*100:.4f}%")
         print('\n')
     else:
         print(f"\ntopk_probs: {topk_probs}")
         print(f"topk_classes: {topk_classes}")
+
 
 def load_model(command_args):
     print(f"loading checkpoint: {command_args.checkpoint}")
@@ -40,6 +42,7 @@ def load_model(command_args):
     model.cat_to_name = checkpoint_load['cat_to_name']
 
     return model, model_name
+
 
 def predict(command_args, model):
     ''' Predict the class (or classes) of an image using a trained deep learning model.
@@ -64,6 +67,7 @@ def predict(command_args, model):
     topk_classes = ps_topk[1][0].cpu().numpy()
 
     return topk_probs, topk_classes
+
 
 # Process a PIL image for use in a PyTorch model
 def process_image(image):
@@ -96,6 +100,7 @@ def process_image(image):
 
     return np_image
 
+
 def setCommandArgs():
     parser = argparse.ArgumentParser(
         description='Options for predicting an image\'s class'
@@ -103,12 +108,18 @@ def setCommandArgs():
 
     parser.add_argument('input', help='path to an image file.')
     parser.add_argument('checkpoint', help='path to a model checkpoint')
-    parser.add_argument('--top_k',          action="store",      dest="top_k",          required=False, type=int, default=5,     help='return top k most likely classes')
-    parser.add_argument('--category_names', action="store",      dest="category_names",                                          help='json file with mapping of class indexes to category names')
-    parser.add_argument('--gpu',            action="store_true", dest="gpu",                                      default=False, help='use gpu')
+    parser.add_argument('--top_k', action="store", dest="top_k", required=False, type=int, default=5,
+                        help='return top k most likely classes')
+    parser.add_argument('--category_names', action="store", dest="category_names",
+                        help='json file with mapping of class indexes to category names')
+    parser.add_argument('--gpu', action="store_true", dest="gpu", default=False, help='use gpu')
 
     args = parser.parse_args()
     return args
 
+
 if __name__ == "__main__":
     main()
+
+# python predict.py ./flowers/valid/24/image_06819.jpg  checkpoint_vgg16.pth --top_k 8 --gpu
+# python predict.py ./flowers/valid/24/image_06819.jpg  checkpoint_vgg16.pth --top_k 8 --category_names cat_to_name.json --gpu
